@@ -1,0 +1,24 @@
+
+<end_criteria>
+	time limit : 0.005
+
+<capture_criteria>
+	scalar increment : 0.00005 : time
+
+<plot_targets>
+	time
+	population
+
+<output_plans>
+	0 : - : ensemble_output : plt : all
+
+<ensemble>
+	multiprocessing : off
+	mapparameterspace : off
+	fitting : off
+	postprocessing : off
+	trajectory_count : 1
+
+
+
+
