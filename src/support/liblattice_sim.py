@@ -36,9 +36,12 @@ class lattice_site(object):
 class lattice(object):
 
 	def __init__(self, *args, **kwargs):
-		self.kwargs = kwargs
-		self.args = args
-		dims, ax_length = 2, 10
+		#self.kwargs = kwargs
+		#self.args = args
+		if 'dims' in kwargs.keys(): dims = kwargs['dims']
+		else: dims = 2
+		if 'ax_length' in kwargs.keys(): ax_length = kwargs['ax_length']
+		else: ax_length = 10
 		self.make_lattice(dims, ax_length)
 
 	def make_lattice(self, dims, maxax):
@@ -94,12 +97,12 @@ class lattice(object):
 
 def_string = ''
 def simulate(sys_string = def_string):
-	_lattice_ = lattice()
+	_lattice_ = lattice(dims = 2, ax_length = 100)
 
 	time = 0.0
 	last_time = 0.0
 	end_time = 1.0
-	incr_time = 0.1
+	incr_time = 0.02
 
 	total_captures = end_time/incr_time
 	capture_count = 0
@@ -138,12 +141,12 @@ def simulate(sys_string = def_string):
 			capture(data, state, capture_count, target_dexes)
 			pop_surfaces[capture_count] = _lattice_.population_grid()
 			capture_count += 1
+			print 'time', last_time
 		state[0] = real_time
 
 		_lattice_.react(lsite_dex)
-		print 'time', real_time
 
-	return data, targets, pop_surfaces, iteration
+	return data,pop_surfaces,targets+['population_surfaces']
 
 if __name__ == '__main__':
 	data, targets, pop_surfaces, iteration = simulate()

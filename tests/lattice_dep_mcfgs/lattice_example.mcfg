@@ -8,9 +8,10 @@
 <plot_targets>
 	time
 	population
+	population_surfaces
 
 <output_plans>
-	0 : - : ensemble_output : plt : all
+	0 : - : ensemble_output : pkl : all
 
 <ensemble>
 	multiprocessing : off

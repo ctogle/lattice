@@ -3,6 +3,7 @@ from modular_core.libfundamental import modular_object_qt as modular_object
 import modular_core.libsimcomponents as lsc
 import modular_core.libmath as lm
 import modular_core.libgeometry as lgeo
+import modular_core.libdatacontrol as ldc
 import modular_core.libfitroutine as lfr
 import modular_core.libpostprocess as lpp
 #import libs.modular_core.libcriterion as lc
@@ -31,7 +32,7 @@ run_param_keys = lmc.run_param_keys +\
 
 def generate_gui_templates_qt(window, ensemble):
 	set_module_memory_(ensemble)
-	plot_target_labels = ['iteration', 'time'] +\
+	plot_target_labels = ['time','population','population_surfaces'] +\
 		ensemble.run_params['species'].keys() +\
 		ensemble.run_params['variables'].keys() +\
 		ensemble.run_params['functions'].keys()
@@ -136,12 +137,15 @@ def set_parameters(ensem):
 	ensem.run_params['species'] = {}
 	ensem.run_params['reactions'] = []
 	ensem.run_params['functions'] = {}
-	ensem.run_params['plot_targets'] = ['iteration', 'time']
+	ensem.run_params['plot_targets'] =\
+		['time', 'population', 'population_surfaces']
 	ensem.postprocess_plan.reset_process_list()
 	output_plan = ensem.run_params['output_plans']['Simulation']
-	output_plan.targeted = ['iteration', 'time']
+	output_plan.targeted =\
+		['time', 'population', 'population_surfaces']
 	for dex in range(len(output_plan.outputs)):
-		output_plan.outputs[dex] = ['iteration', 'time']
+		output_plan.outputs[dex] =\
+			['time', 'population', 'population_surfaces']
 
 	ensem.run_params.create_partition('system', 
 		[	'variables', 'species', 'reactions', 'functions', 
@@ -308,9 +312,8 @@ class sim_system(lsc.sim_system_external):
 
 	def iterate(self):
 		try:
-			self.data = self.finalize_data(
-				*lsim.simulate(self.system_string))
-
+			data = lsim.simulate(self.system_string)
+			self.data = self.finalize_data_nontrivial(*data)
 		except ValueError:
 			traceback.print_exc(file=sys.stdout)
 			print 'simulation failed; aborting'
@@ -320,23 +323,6 @@ class sim_system(lsc.sim_system_external):
 			traceback.print_exc(file=sys.stdout)
 			print 'simulation failed; aborting'
 			self.bAbort = True
-
-	def finalize_data(self, data, targets, pops, iterat, toss = None):
-		if data is False:
-			self.bAbort = True
-			return data
-
-		data = [dater for dater in data if len(dater) > 1]
-		reorder = []
-		for name in self.params['plot_targets']:
-			try: dex = targets.index(name)
-			except ValueError:
-				print 'plot target not in targets...'
-				raise ValueError
-			reorder.append(np.array(data[dex][:toss], dtype = np.float))
-
-		pdb.set_trace()
-		return np.array(reorder, dtype = np.float)
 
 class variable(modular_object):
 
