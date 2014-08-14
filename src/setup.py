@@ -20,14 +20,14 @@ core_modules = [
 	'support.liblattice_sim', 
 				]
 
-def ignore_res(f):
-	#if f.startswith('__') or f.startswith('_.'): return True
-	#else: return False
-	return False
-res_dir = 'lattice/mcfgs/'
-res_fis = [f for f in os.listdir(os.path.join(
-	os.getcwd(), 'lattice', 'mcfgs')) if not ignore_res(f)]
-res_files = [res_dir + f for f in res_fis]
+#def ignore_res(f):
+#	#if f.startswith('__') or f.startswith('_.'): return True
+#	#else: return False
+#	return False
+#res_dir = 'lattice/mcfgs/'
+#res_fis = [f for f in os.listdir(os.path.join(
+#	os.getcwd(), 'lattice', 'mcfgs')) if not ignore_res(f)]
+#res_files = [res_dir + f for f in res_fis]
 
 #requirements = [
 #	'modular_core >= 1.0', 
@@ -51,7 +51,7 @@ This is the lattice module package of modular
 	#dependency_links = [], 
 	zip_safe = False,
 	#ext_package = 'modular_core.modules.chemicallite_support',
-	data_files=[('lattice/mcfgs', res_files)], 
+	#data_files=[('lattice/mcfgs', res_files)], 
 	ext_modules = [],
 	)
 
