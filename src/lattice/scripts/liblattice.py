@@ -9,7 +9,8 @@ import modular_core.libpostprocess as lpp
 #import libs.modular_core.libcriterion as lc
 import modular_core.libmodcomponents as lmc
 
-import support.liblattice_sim as lsim
+import lattice_simulator as lsim
+#import support.liblattice_sim as lsim
 
 import sys, time, types, random, traceback
 import numpy as np
