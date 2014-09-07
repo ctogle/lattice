@@ -58,6 +58,15 @@ cpdef int choose_biased_index(list bins, int bcnt):
         #if rand < lookup[l]/tot:
             return l
 
+cpdef int pick_agent_to_act(list agents):
+    #cdef list prop_table = [ag.total_prop for ag in agents]
+    cdef list prop_table = []
+    cdef int pcnt = len(agents)
+    cdef int adx
+    for adx in xrange(pcnt):
+        prop_table.append(agents[adx].total_prop)
+    return choose_biased_index(prop_table, pcnt)
+
 cpdef update_propensities(lattice):
     cdef int ldex
     cdef int adex

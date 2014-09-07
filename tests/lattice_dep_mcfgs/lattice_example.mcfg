@@ -13,7 +13,7 @@
 	C
 	population_surfaces
 	identity_surfaces
-  resource_surface_food
+  #resource_surface_food
 
 <output_plans>
 	0 : - : ensemble_output : pkl : all
