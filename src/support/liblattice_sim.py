@@ -18,14 +18,15 @@ import modular_core.libprofile as lprf
 
 import pdb
 
-def set_state(state, time, latt):
+def set_state(state, surface_state, time, latt):
     state[0] = time
     state[1] = latt.agent_count
+    state[2] = np.mean(surface_state[0])
     #state[1] = latt.total_population()
     #state[2:] = spectrum_population(
     #    latt.spec_count, latt.agent_count, 
     #    latt.species_index_dict, latt.agents)
-    state[2:] = latt.spectrum_population()
+    state[3:] = latt.spectrum_population()
 
 def set_surface_state(surf_state, time, latt):
     surf_state[0] = latt.population_grid()
@@ -371,17 +372,8 @@ class lattice(object):
         self.agents.remove(agent)
         self.agent_count -= 1
 
-    #def total_population(self):
-    #    return len(self.agents)
-
     def total_propensity(self):
         return self.total_agent_propensity
-
-    def pick_agent_to_act(self):
-        prop_table = [ag.total_prop for ag in self.agents]
-        return cbindex(prop_table, len(prop_table))
-        #ag_rand = rm.randrange(len(self.agents))
-        #return ag_rand
 
     def act_agent(self, agdex):
         agent = self.agents[agdex]
@@ -439,9 +431,9 @@ def simulate(sys_string = def_string):
     #    ((2,93),'A'),((6,83),'B'),((4,97),'C'), 
     #        ]
     agents =\
-        [('random', 'A')]*4800 +\
-        [('random', 'B')]*4800 +\
-        [('random', 'C')]*4800 
+        [('random', 'A')]*3333 +\
+        [('random', 'B')]*3333 +\
+        [('random', 'C')]*3333 
     reactions = [
         #'(1)A+(1)food[5.0]->(2)A', 
         #'(1)B+(1)food[5.0]->(2)B', 
@@ -460,7 +452,7 @@ def simulate(sys_string = def_string):
     birthing_flag = False#True
     resources = []#[('all', 'food', 3)]
     lattice_dims = 2
-    lattice_size = 120
+    lattice_size = 100
     max_occupancy = 2
     timed_out = False
     timed_out_limit = 3600.0
@@ -482,22 +474,25 @@ def simulate(sys_string = def_string):
 
     time = 0.0
     last_time = 0.0
-    end_time = 100.0
-    incr_time = 0.01
+    end_time = 50.0
+    incr_time = 0.1
 
     total_captures = end_time/incr_time
     capture_count = 0                               
     res_names = [r[1] for r in resources]
-    targets = ['time', 'population'] + species[:]# + res_names
-    plot_targets = ['time', 'population'] + species[:]# + res_names
+    targets = ['time', 'population', 'mean_occupancy'] + species[:]# + res_names
+    plot_targets = ['time', 'population', 'mean_occupancy'] + species[:]# + res_names
     surf_targets = [
         'population_surfaces', 
         'identity_surfaces'] + ['resource_surface_' + r for r in res_names]
     plot_surf_targets = [
         'population_surfaces', 
         'identity_surfaces'] + ['resource_surface_' + r for r in res_names] 
+    #voxel_targets = ['identity_voxels']
+    #plot_voxel_targets = ['identity_voxels']
     target_dexes = [targets.index(ta) for ta in plot_targets]
     surf_target_dexes = [surf_targets.index(ta) for ta in plot_surf_targets]
+    #voxel_target_dexes = [voxel_targets.index(ta) for ta in plot_voxel_targets]
     _lattice_ = lattice(
         dims = lattice_dims, ax_length = lattice_size, species = species, 
         reactions = reactions, max_occupancy = max_occupancy, 
@@ -507,11 +502,15 @@ def simulate(sys_string = def_string):
     maxax = _lattice_.max_axis_size
     state = np.zeros(shape = (len(targets)), dtype = np.float)
     surface_state = np.zeros(shape=(len(surf_targets),maxax,maxax),dtype=np.float)
+    #voxel_state = np.zeros(shape=(len(voxel_targets),maxax,maxax,maxax),dtype=np.float)
     data = np.zeros(shape=(len(plot_targets),total_captures),dtype=np.float)
     surface_data = np.zeros(shape = (len(surf_targets), 
     	total_captures, maxax, maxax), dtype = np.float)
-    set_state(state, time, _lattice_)
+    #voxel_data = np.zeros(shape = (len(voxel_targets), 
+    #	total_captures, maxax, maxax, maxax), dtype = np.float)
+    #set_voxel_state(voxel_state, time, _lattice_)
     set_surface_state(surface_state, time, _lattice_)
+    set_state(state, surface_state, time, _lattice_)
 
     start_time = ti.time()
     if birthing_flag: dead_eco_check = lambda : False
@@ -522,26 +521,33 @@ def simulate(sys_string = def_string):
         if propensity_total > 0.0 and _lattice_.agent_count > 0:
             propensity_total_inv = 1.0/propensity_total
             time_step = -1.0 * log(rm.random()) * propensity_total_inv
-            agent_dex = pick_agent(_lattice_.agents)
-            #agent_dex = _lattice_.pick_agent_to_act()
+            acnt = len(_lattice_.agents)
+            agrand = rm.uniform(0.0, propensity_total)
+            agent_dex = pick_agent(_lattice_.agents, acnt, agrand)
         else:
             time_step = incr_time
             agent_dex = -1
 
         time += time_step
-        set_state(state, time, _lattice_)
+        #set_surface_state(surface_state, time, _lattice_)
+        set_state(state, surface_state, time, _lattice_)
 
         real_time = state[0]
-        while last_time < real_time and capture_count < total_captures:
+        if last_time < real_time and capture_count < total_captures:
+            #set_voxel_state(voxel_state, time, _lattice_)
             set_surface_state(surface_state, time, _lattice_)
+            set_state(state, surface_state, time, _lattice_)
+        while last_time < real_time and capture_count < total_captures:
             state[0] = last_time
             last_time += incr_time
             capture(data, state, capture_count, target_dexes)
             capture(surface_data, surface_state, capture_count, surf_target_dexes)
+            #capture(voxel_data, voxel_state, capture_count, voxel_target_dexes)
             capture_count += 1
             print 'time', last_time, 'pop', len(_lattice_.agents)
         state[0] = real_time
 
+        #agent activity cant depend on state/surface_state...
         if agent_dex >= 0: _lattice_.act_agent(agent_dex)
         agents_propensity(_lattice_)
 
@@ -549,15 +555,17 @@ def simulate(sys_string = def_string):
         dead_eco = dead_eco_check()
 
     if timed_out or dead_eco:                        
-        set_surface_state(surface_state, time, _lattice_)
+        #set_surface_state(surface_state, time, _lattice_)
         state[0] = last_time
         last_time += incr_time
         capture(data, state, capture_count, target_dexes)
         capture(surface_data, surface_state, capture_count, surf_target_dexes)
+        #capture(voxel_data, voxel_state, capture_count, voxel_target_dexes)
         capture_count += 1
         print 'time', last_time, 'pop', len(_lattice_.agents)
 
         toss = capture_count
+        #voxel_data = voxel_data[:,:toss,:,:]
         surface_data = surface_data[:,:toss,:,:]
         data = data[:,:toss]
         return data,surface_data,targets + surf_targets

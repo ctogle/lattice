@@ -37,8 +37,7 @@ cpdef bint validate_rxn(list used, str pop, list resources):
     return True
 
 cpdef int choose_biased_index(list bins, int bcnt):
-    #bcnt = len(bins)
-    tot = 0
+    cdef float tot = 0
     cdef int l
     cdef list lookup = []
     cdef float rand
@@ -46,26 +45,29 @@ cpdef int choose_biased_index(list bins, int bcnt):
         tot += bins[b]
         lookup.append(tot)
 
-    if tot == 0:
+    if tot == 0.0:
         l = rm.randrange(bcnt)
         return l
 
-    #lookup = [l/tot for l in lookup]
     rand = rm.uniform(0.0, tot)
-    #rand = rm.random()
     for l in xrange(bcnt):
         if rand < lookup[l]:
-        #if rand < lookup[l]/tot:
             return l
 
-cpdef int pick_agent_to_act(list agents):
-    #cdef list prop_table = [ag.total_prop for ag in agents]
-    cdef list prop_table = []
-    cdef int pcnt = len(agents)
+#1000000 is a HARD limit on the maximum number of agents!!
+cdef float prop_table[1000000]
+def pick_agent_to_act(list agents, int pcnt, float rand):
+    cdef float tot = 0.0
+    cdef float agtot
     cdef int adx
     for adx in xrange(pcnt):
-        prop_table.append(agents[adx].total_prop)
-    return choose_biased_index(prop_table, pcnt)
+        agtot = agents[adx].total_prop
+        tot += agtot
+        prop_table[adx] = tot
+
+    for adx in xrange(pcnt):
+        if rand < prop_table[adx]:
+            return adx
 
 cpdef update_propensities(lattice):
     cdef int ldex
