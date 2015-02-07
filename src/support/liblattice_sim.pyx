@@ -423,6 +423,7 @@ class lattice(object):
 
 def_string = ''
 def simulate(sys_string = def_string):
+    print 'fuck off randy'
     species = ['A', 'B', 'C']
     #agents = [
     #    ((1,3),'A'),((4,3),'B'),((8,7),'C'), 
@@ -488,8 +489,11 @@ def simulate(sys_string = def_string):
     plot_surf_targets = [
         'population_surfaces', 
         'identity_surfaces'] + ['resource_surface_' + r for r in res_names] 
+    #voxel_targets = ['identity_voxels']
+    #plot_voxel_targets = ['identity_voxels']
     target_dexes = [targets.index(ta) for ta in plot_targets]
     surf_target_dexes = [surf_targets.index(ta) for ta in plot_surf_targets]
+    #voxel_target_dexes = [voxel_targets.index(ta) for ta in plot_voxel_targets]
     _lattice_ = lattice(
         dims = lattice_dims, ax_length = lattice_size, species = species, 
         reactions = reactions, max_occupancy = max_occupancy, 
@@ -499,9 +503,13 @@ def simulate(sys_string = def_string):
     maxax = _lattice_.max_axis_size
     state = np.zeros(shape = (len(targets)), dtype = np.float)
     surface_state = np.zeros(shape=(len(surf_targets),maxax,maxax),dtype=np.float)
+    #voxel_state = np.zeros(shape=(len(voxel_targets),maxax,maxax,maxax),dtype=np.float)
     data = np.zeros(shape=(len(plot_targets),total_captures),dtype=np.float)
     surface_data = np.zeros(shape = (len(surf_targets), 
     	total_captures, maxax, maxax), dtype = np.float)
+    #voxel_data = np.zeros(shape = (len(voxel_targets), 
+    #	total_captures, maxax, maxax, maxax), dtype = np.float)
+    #set_voxel_state(voxel_state, time, _lattice_)
     set_surface_state(surface_state, time, _lattice_)
     set_state(state, surface_state, time, _lattice_)
 
@@ -527,6 +535,7 @@ def simulate(sys_string = def_string):
 
         real_time = state[0]
         if last_time < real_time and capture_count < total_captures:
+            #set_voxel_state(voxel_state, time, _lattice_)
             set_surface_state(surface_state, time, _lattice_)
             set_state(state, surface_state, time, _lattice_)
         while last_time < real_time and capture_count < total_captures:
@@ -534,6 +543,7 @@ def simulate(sys_string = def_string):
             last_time += incr_time
             capture(data, state, capture_count, target_dexes)
             capture(surface_data, surface_state, capture_count, surf_target_dexes)
+            #capture(voxel_data, voxel_state, capture_count, voxel_target_dexes)
             capture_count += 1
             print 'time', last_time, 'pop', len(_lattice_.agents)
         state[0] = real_time
@@ -551,10 +561,12 @@ def simulate(sys_string = def_string):
         last_time += incr_time
         capture(data, state, capture_count, target_dexes)
         capture(surface_data, surface_state, capture_count, surf_target_dexes)
+        #capture(voxel_data, voxel_state, capture_count, voxel_target_dexes)
         capture_count += 1
         print 'time', last_time, 'pop', len(_lattice_.agents)
 
         toss = capture_count
+        #voxel_data = voxel_data[:,:toss,:,:]
         surface_data = surface_data[:,:toss,:,:]
         data = data[:,:toss]
         return data,surface_data,targets + surf_targets

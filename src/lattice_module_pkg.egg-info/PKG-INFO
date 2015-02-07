@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: lattice-module-pkg
+Version: 1.0
+Summary: lattice-module pkg
+Home-page: http://github.com/ctogle/lattice
+Author: ctogle
+Author-email: cogle@vt.edu
+License: MIT License
+Description: This is the lattice module package of modular
+        
+Platform: UNKNOWN
